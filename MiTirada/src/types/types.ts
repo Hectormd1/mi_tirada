@@ -9,3 +9,10 @@ export type PlatoResumen = {
   numero: number;
   resultado: 'acierto1' | 'acierto2' | 'fallo';
 };
+
+export type PlatoHistorial = {
+  id: number;
+  nombre: string;
+  resultados: PlatoResumen[];
+  fecha: string;
+};

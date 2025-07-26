@@ -1,13 +1,7 @@
 // src/views/InicioScreen.tsx
 
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -42,18 +36,19 @@ export default function InicioScreen() {
           } else {
             setUltimaTirada(null);
           }
-        }
+        },
       );
     });
   }, []);
 
   const irATirada = () => navigation.navigate('Tirada');
+  const irAHistorial = () => navigation.navigate('Historial');
   const irAResumen = () => {
     if (!ultimaTirada) {
       Alert.alert('No hay tiradas completadas aún');
       return;
     }
-    navigation.navigate('ResumenTirada', ultimaTirada);
+    navigation.navigate('Resumen', ultimaTirada);
   };
 
   return (
@@ -65,7 +60,10 @@ export default function InicioScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={irAResumen}>
-        <Text style={styles.buttonText}>RESUMEN TIRADA</Text>
+        <Text style={styles.buttonText}>RESUMEN ULTIMA TIRADA</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={irAHistorial}>
+        <Text style={styles.buttonText}>HISTORIAL DE TIRADAS</Text>
       </TouchableOpacity>
     </View>
   );

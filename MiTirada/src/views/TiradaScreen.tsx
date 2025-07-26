@@ -1,3 +1,5 @@
+// src/views/TiradaScreen.tsx
+
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -13,19 +15,15 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import db from '../config/db';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { PlatoResultado } from '../types/types';
 
-type PlatoResultado = {
-  numero: number;
-  disparo1: boolean;
-  disparo2: boolean;
-  resultado: 'acierto1' | 'acierto2' | 'fallo';
-};
+
 
 type Props = NativeStackNavigationProp<RootStackParamList, 'Tirada'>;
 
 const TOTAL_PLATOS = 25;
-
-// **ANCHO DE CELDAS**
 const CELL_WIDTH = 60;
 const NAME_CELL_WIDTH = 100;
 
@@ -40,7 +38,6 @@ export default function TiradaScreen() {
     'no-iniciada' | 'activa' | 'pausada'
   >('no-iniciada');
 
-  // **REF para controlar el ScrollView horizontal**
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -50,34 +47,38 @@ export default function TiradaScreen() {
     db.transaction(tx => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS tiradas (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          nombre TEXT,
-          resultados TEXT
-        );`,
+           id         INTEGER PRIMARY KEY AUTOINCREMENT,
+           nombre     TEXT,
+           resultados TEXT,
+           fecha      TEXT DEFAULT CURRENT_TIMESTAMP
+         );`
       );
     });
   }, []);
 
   const guardarTiradaEnBD = (nombre: string, res: PlatoResultado[]) => {
     const json = JSON.stringify(res);
+    const ahoraISO = new Date().toISOString();
     db.transaction(tx => {
-      tx.executeSql('INSERT INTO tiradas (nombre, resultados) VALUES (?, ?)', [
-        nombre,
-        json,
-      ]);
+      tx.executeSql(
+        `INSERT INTO tiradas (nombre, resultados, fecha)
+           VALUES (?, ?, ?);`,
+        [nombre, json, ahoraISO]
+      );
     });
     AsyncStorage.setItem('tirador', nombre).catch(console.error);
   };
 
   const renderPlato = (plato: PlatoResultado) =>
     plato.resultado === 'acierto1'
-      ? '✅'
+      ? <FontAwesome5 name="check" size={20} color="green" />
       : plato.resultado === 'acierto2'
-      ? '2️⃣'
-      : '❌';
+      ? <FontAwesome6 name="check-double" size={20} color="green" />
+      : <FontAwesome6 name="xmark" size={20} color="red" />;
 
   const registrarResultado = (resultado: 'acierto1' | 'acierto2' | 'fallo') => {
     if (estadoTirada !== 'activa') return;
+
     const nuevo: PlatoResultado = {
       numero: platoActual,
       disparo1: true,
@@ -88,16 +89,18 @@ export default function TiradaScreen() {
     setResultados(nuevos);
     Vibration.vibrate(resultado === 'acierto1' ? 100 : [100, 100]);
 
-    // **SCROLL AUTOMÁTICO**: calcula offset y desplaza
-    const i = platoActual - 1;
-    const offsetX = i * CELL_WIDTH;
-    scrollRef.current?.scrollTo({ x: offsetX, animated: true });
+    // Scroll automático
+    const offsetX = (platoActual - 1) * CELL_WIDTH;
     scrollRef.current?.scrollTo({ x: offsetX, animated: true });
 
     if (platoActual >= TOTAL_PLATOS) {
-      Vibration.vibrate([400, 200, 400]);
+      // Guardar y navegar
       guardarTiradaEnBD(tirador, nuevos);
-      navigation.navigate('ResumenTirada', { tirador, resultados: nuevos });
+      Vibration.vibrate([400, 200, 400, 200, 400]);
+      navigation.replace('Resumen', {
+        tirador,
+        resultados: nuevos,
+      });
     } else {
       setPlatoActual(platoActual + 1);
       setEstado('esperando');
@@ -117,17 +120,17 @@ export default function TiradaScreen() {
         />
         <TouchableOpacity
           disabled={!habilitado}
-          onPress={() => {
-            AsyncStorage.setItem('tirador', tirador).catch(console.error);
-            setNombreConfirmado(true);
-          }}
+          onPress={() => setNombreConfirmado(true)}
           style={[
             styles.btn,
             { backgroundColor: habilitado ? '#007AFF' : '#ccc' },
           ]}
         >
           <Text
-            style={{ color: habilitado ? '#fff' : '#888', fontWeight: 'bold' }}
+            style={{
+              color: habilitado ? '#fff' : '#888',
+              fontWeight: 'bold',
+            }}
           >
             CONFIRMAR
           </Text>
@@ -141,6 +144,7 @@ export default function TiradaScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={{ flexDirection: 'row' }}>
+        {/* Sticky Tirador */}
         <View style={styles.stickyColumn}>
           <Text style={[styles.cell, styles.header, styles.nameCell]}>
             Tirador
@@ -148,7 +152,7 @@ export default function TiradaScreen() {
           <Text style={[styles.cell, styles.nameCell]}>{tirador}</Text>
         </View>
 
-        {/* ScrollView HORIZONTAL con ref */}
+        {/* Platos Scroll */}
         <ScrollView
           ref={scrollRef}
           horizontal
@@ -179,12 +183,13 @@ export default function TiradaScreen() {
                   <Text key={`e-${i}`} style={styles.cell}>
                     -
                   </Text>
-                ),
+                )
               )}
             </View>
           </View>
         </ScrollView>
 
+        {/* Sticky Total */}
         <View style={styles.stickyColumn}>
           <Text style={[styles.cell, styles.header, styles.totalCell]}>
             Total
@@ -196,7 +201,7 @@ export default function TiradaScreen() {
       <Text style={{ marginTop: 20 }}>
         Plato {platoActual} / {TOTAL_PLATOS}
       </Text>
-      <Text>Estado: {estado}</Text>
+      {/* <Text>Estado: {estado}</Text> */}
 
       {estadoTirada === 'no-iniciada' && (
         <TouchableOpacity
@@ -224,7 +229,7 @@ export default function TiradaScreen() {
               onPress={() => registrarResultado('acierto1')}
               style={[styles.btn, styles.btnPrimary, styles.sideBtn]}
             >
-              <Text style={styles.btnText}>1ER DISPARO</Text>
+              <Text style={styles.btnText}>1ᵉʳ DISPARO</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => registrarResultado('acierto2')}

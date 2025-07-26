@@ -72,3 +72,20 @@ Conéctalo por cable.
 Luego:
 adb devices                   # Verifica que aparece tu móvil
 npx react-native run-android
+
+
+
+
+
+# Extrae la DB interna al fichero local tiradas.db fuera de POWERSHEL en BASH por ejemplo
+adb exec-out run-as com.mitirada cat databases/tiradas.db > tiradas.db
+
+### Guardar cambios
+# 1) Sube tu tiradas.db editada a /data/local/tmp
+adb push tiradas.db /data/local/tmp/tiradas.db
+
+# 2) Con run-as, copia desde ese tmp hacia la carpeta de tu app
+adb shell run-as com.mitirada cp /data/local/tmp/tiradas.db databases/tiradas.db
+
+# 3) (Opcional) borra el temporal
+adb shell rm /data/local/tmp/tiradas.db

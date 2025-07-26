@@ -17,13 +17,15 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import db from '../config/db';
 import { PlatoResumen } from '../types/types';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 
 
-type ResumenRouteProp = RouteProp<RootStackParamList, 'ResumenTirada'>;
+type ResumenRouteProp = RouteProp<RootStackParamList, 'Resumen'>;
 type ResumenNavProp = NativeStackNavigationProp<
   RootStackParamList,
-  'ResumenTirada'
+  'Resumen'
 >;
 
 export default function ResumenTiradaScreen() {
@@ -100,9 +102,11 @@ export default function ResumenTiradaScreen() {
 
   // Renderizado de iconos y estilos
   const renderIcon = (r: PlatoResumen) =>
-    r.resultado === 'acierto1' ? '✅'
-      : r.resultado === 'acierto2' ? '2️⃣'
-      : '❌';
+    r.resultado === 'acierto1'
+          ? <FontAwesome5 name="check" size={20} color="green" />
+          : r.resultado === 'acierto2'
+          ? <FontAwesome6 name="check-double" size={20} color="green" />
+          : <FontAwesome6 name="xmark" size={20} color="red" />;
 
   const cellStyle = (r: PlatoResumen) =>
     r.resultado === 'acierto1' || 
