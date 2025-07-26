@@ -1,4 +1,7 @@
 {
   "name": "MiTirada",
-  "displayName": "MiTirada"
+  "displayName": "MiTirada",
+  "plugins": [
+    "expo-sqlite"
+  ]
 }

@@ -16,6 +16,7 @@
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
+        android:screenOrientation="landscape"
         android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -23,4 +24,6 @@
         </intent-filter>
       </activity>
     </application>
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 </manifest>
