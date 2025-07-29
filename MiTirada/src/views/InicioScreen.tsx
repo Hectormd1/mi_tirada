@@ -1,17 +1,17 @@
-// src/views/InicioScreen.tsx
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../types/types';
 import db from '../config/db';
 import { PlatoResumen } from '../types/types';
+import { useAppColors } from '../DisplayMode/colors';
 
 type InicioNavProp = NativeStackNavigationProp<RootStackParamList, 'Inicio'>;
 
 export default function InicioScreen() {
   const navigation = useNavigation<InicioNavProp>();
+  const colors = useAppColors();
   const [ultimaTirada, setUltimaTirada] = useState<{
     tirador: string;
     resultados: PlatoResumen[];
@@ -52,32 +52,41 @@ export default function InicioScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mi Tirada</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Image
+        source={require('../assets/logo.png')}
+        style={{ width: 200, height: 200, resizeMode: 'contain', marginTop: -30 }}
+      />
 
-      <TouchableOpacity style={styles.button} onPress={irATirada}>
-        <Text style={styles.buttonText}>EMPEZAR TIRADA</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={irAResumen}>
-        <Text style={styles.buttonText}>RESUMEN ULTIMA TIRADA</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={irAHistorial}>
-        <Text style={styles.buttonText}>HISTORIAL DE TIRADAS</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primaryBtn }]} onPress={irATirada}>
+          <Text style={[styles.buttonText, { color: colors.headerText }]}>EMPEZAR TIRADA</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primaryBtn }]} onPress={irAResumen}>
+          <Text style={[styles.buttonText, { color: colors.headerText }]}>ULTIMA TIRADA</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.primaryBtn }]} onPress={irAHistorial}>
+          <Text style={[styles.buttonText, { color: colors.headerText }]}>HISTORIAL</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 5,
-    marginVertical: 5,
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', },
+  buttonRow: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', textAlign: 'center' },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    width: 160,
+  },
+  buttonText: { fontWeight: 'bold', textAlign: 'center' },
 });

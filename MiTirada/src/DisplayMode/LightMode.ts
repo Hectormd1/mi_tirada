@@ -1,0 +1,30 @@
+const LightMode = {
+  background: '#fafafa',
+  inputBg: '#fff',
+  inputText: '#222',
+  text: '#222',
+  textSoft: '#666',
+  headerBg: '#0277BD',
+  headerText: '#fff',
+  cell: '#fff',
+  cellBorder: '#ccc',
+  pending: '#E1F5FE',
+  acierto: '#C8E6C9',
+  acierto2: '#90caf9',
+  fallo: '#FFCDD2',
+  nameCell: '#DCEEF8',
+  totalCell: '#DCEEF8',
+  oddRow: '#8EC9E2',
+  evenRow: '#E1F5FE',
+  trash: 'red',
+  primaryBtn: '#007AFF',
+  secondaryBtn: '#ebb71cff',
+  missBtn: '#E57373',
+  hitBtn: '#0d7510ff',
+  hit2Btn: '#388E3C',
+  modalBg: '#fff',
+  modalOverlay: 'rgba(0,0,0,0.4)',  
+  pendingCell: "#263A4D",           // <--- Añadir (botón borrar y X roja)
+  primary: "#007AFF",         // <--- Añadir (color botones primarios y loader)
+};
+export default LightMode;

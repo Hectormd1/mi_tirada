@@ -1,5 +1,3 @@
-// src/views/HistorialTiradasScreen.tsx
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -14,20 +12,27 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../types/types';
 import db from '../config/db';
 import { PlatoResumen, PlatoHistorial } from '../types/types';
 import dayjs from 'dayjs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import { useAppColors } from '../DisplayMode/colors';
 
 type HistorialNavProp = NativeStackNavigationProp<
   RootStackParamList,
   'Historial'
 >;
 
+const NAME_COL_WIDTH = 120;
+const TOTAL_COL_WIDTH = 60;
+const ROW_HEIGHT = 40;
+const EXTRA_TOP = 60;
+
 export default function HistorialTiradasScreen() {
+  const colors = useAppColors();
   const navigation = useNavigation<HistorialNavProp>();
   const [registros, setRegistros] = useState<PlatoHistorial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,126 +91,269 @@ export default function HistorialTiradasScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#4FC3F7" />
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.outer}>
-      <ScrollView horizontal contentContainerStyle={styles.container}>
-        <View style={styles.row}>
-          {/* Sticky Tirador */}
-          <View style={styles.stickyColumn}>
-            <View style={[styles.cell, styles.header, styles.nameCell]}>
-              <Text style={styles.headerText}>Tirador</Text>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Separación superior oscura */}
+      <View
+        style={{ backgroundColor: colors.background, paddingTop: EXTRA_TOP }}
+      >
+        {/* Tabla principal */}
+        <View style={styles.tableWrapper}>
+          {/* Columna Tirador fija */}
+          <View
+            style={[styles.leftSticky, { backgroundColor: colors.nameCell }]}
+          >
+            <View
+              style={[
+                styles.row,
+                styles.headerRow,
+                { backgroundColor: colors.headerBg },
+              ]}
+            >
+              <View
+                style={[
+                  styles.cell,
+                  { width: NAME_COL_WIDTH, borderColor: colors.cellBorder },
+                ]}
+              >
+                <Text style={[styles.headerText, { color: colors.headerText }]}>
+                  Tirador
+                </Text>
+              </View>
             </View>
             {registros.map((reg, idx) => (
               <View
                 key={reg.id}
                 style={[
-                  styles.cell,
-                  styles.nameCell,
-                  idx % 2 === 0 ? styles.evenRow : styles.oddRow,
-                  styles.nameRow,
+                  styles.row,
+                  { height: ROW_HEIGHT },
+                  idx % 2 === 0
+                    ? { backgroundColor: colors.evenRow }
+                    : { backgroundColor: colors.oddRow },
                 ]}
               >
-                <TouchableOpacity
-                  onPress={() => confirmDelete(reg.id, reg.fecha)}
-                  style={styles.trashBtn}
+                <View
+                  style={[
+                    styles.cell,
+                    {
+                      width: NAME_COL_WIDTH,
+                      backgroundColor: colors.nameCell,
+                      borderColor: colors.cellBorder,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    },
+                  ]}
                 >
-                  <Ionicons name="trash" size={20} color="red" />
-                </TouchableOpacity>
-                <Text style={styles.nameText}>
-                  {reg.nombre.charAt(0).toUpperCase() + reg.nombre.slice(1)}
-                </Text>
+                  <TouchableOpacity
+                    onPress={() => confirmDelete(reg.id, reg.fecha)}
+                    style={styles.trashBtn}
+                  >
+                    <Ionicons name="trash" size={20} color={colors.trash} />
+                  </TouchableOpacity>
+                  <Text style={[styles.nameText, { color: colors.text }]}>
+                    {reg.nombre.charAt(0).toUpperCase() + reg.nombre.slice(1)}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
 
-          {/* Scroll central */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View>
-              {/* Header */}
-              <View style={[styles.row, styles.headerRow]}>
-                <View style={[styles.cell, styles.header, styles.dateCell]}>
-                  <Text style={styles.headerText}>Fecha</Text>
+          {/* ScrollView central */}
+          <View
+            style={[
+              styles.scrollWrapper,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            <ScrollView
+              horizontal
+              bounces={false}
+              overScrollMode="never"
+              alwaysBounceHorizontal={false}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 0, paddingRight: 0 }}
+            >
+              <View>
+                {/* Header */}
+                <View style={[styles.row, styles.headerRow]}>
+                  <View
+                    style={[
+                      styles.cell,
+                      {
+                        width: 140,
+                        backgroundColor: colors.headerBg,
+                        borderColor: colors.cellBorder,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.headerText, { color: colors.headerText }]}
+                    >
+                      Fecha
+                    </Text>
+                  </View>
+                  {Array.from({ length: 25 }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.cell,
+                        {
+                          backgroundColor: colors.headerBg,
+                          borderColor: colors.cellBorder,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.headerText,
+                          { color: colors.headerText },
+                        ]}
+                      >
+                        {i + 1}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-                {Array.from({ length: 25 }, (_, i) => (
-                  <View key={i} style={[styles.cell, styles.header]}>
-                    <Text style={styles.headerText}>{i + 1}</Text>
+                {/* Filas de partidas */}
+                {registros.map((reg, idx) => (
+                  <View
+                    key={reg.id}
+                    style={[
+                      styles.row,
+                      { height: ROW_HEIGHT },
+                      idx % 2 === 0
+                        ? { backgroundColor: colors.evenRow }
+                        : { backgroundColor: colors.oddRow },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.cell,
+                        {
+                          width: 140,
+                          borderColor: colors.cellBorder,
+                          backgroundColor: 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: colors.text }}>
+                        {dayjs(reg.fecha).format('DD-MM-YY HH:mm')}
+                      </Text>
+                    </View>
+                    {reg.resultados.map(r => (
+                      <View
+                        key={`${reg.id}-${r.numero}`}
+                        style={[
+                          styles.cell,
+                          {
+                            borderColor: colors.cellBorder,
+                            backgroundColor:
+                              r.resultado === 'fallo'
+                                ? colors.fallo
+                                : colors.acierto,
+                          },
+                        ]}
+                      >
+                        {r.resultado === 'acierto1' ? (
+                          <FontAwesome5 name="check" size={20} color="green" />
+                        ) : r.resultado === 'acierto2' ? (
+                          <FontAwesome6
+                            name="check-double"
+                            size={20}
+                            color="green"
+                          />
+                        ) : (
+                          <FontAwesome6
+                            name="xmark"
+                            size={20}
+                            color={colors.trash}
+                          />
+                        )}
+                      </View>
+                    ))}
+                    {reg.resultados.length < 25 &&
+                      Array.from({ length: 25 - reg.resultados.length }).map(
+                        (_, i) => (
+                          <View
+                            key={i}
+                            style={[
+                              styles.cell,
+                              {
+                                borderColor: colors.cellBorder,
+                                backgroundColor: colors.pendingCell,
+                              },
+                            ]}
+                          >
+                            <Text style={{ color: colors.text }}>–</Text>
+                          </View>
+                        ),
+                      )}
                   </View>
                 ))}
               </View>
-              {/* Rows */}
-              {registros.map((reg, idx) => (
-                <View
-                  key={reg.id}
-                  style={[
-                    styles.row,
-                    idx % 2 === 0 ? styles.evenRow : styles.oddRow,
-                  ]}
-                >
-                  <View style={[styles.cell, styles.dateCell]}>
-                    <Text>
-                      {dayjs(reg.fecha).isValid()
-                        ? dayjs(reg.fecha).format('DD-MM-YY HH:mm')
-                        : '—'}
-                    </Text>
-                  </View>
-                  {reg.resultados.map(r => (
-                    <View key={`${reg.id}-${r.numero}`} style={styles.cell}>
-                      {r.resultado === 'acierto1' ? (
-                        <FontAwesome5 name="check" size={20} color="green" />
-                      ) : r.resultado === 'acierto2' ? (
-                        <FontAwesome6
-                          name="check-double"
-                          size={20}
-                          color="green"
-                        />
-                      ) : (
-                        <FontAwesome6 name="xmark" size={20} color="red" />
-                      )}
-                    </View>
-                  ))}
-                  {reg.resultados.length < 25 &&
-                    Array.from({ length: 25 - reg.resultados.length }).map(
-                      (_, i) => (
-                        <View key={i} style={styles.cell}>
-                          <Text>–</Text>
-                        </View>
-                      ),
-                    )}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </View>
 
-          {/* Sticky Total */}
-          <View style={styles.stickyColumn}>
-            <View style={[styles.cell, styles.header, styles.totalCell]}>
-              <Text style={styles.headerText}>Total</Text>
+          {/* Columna Total fija */}
+          <View
+            style={[styles.rightSticky, { backgroundColor: colors.totalCell }]}
+          >
+            <View
+              style={[
+                styles.row,
+                styles.headerRow,
+                { backgroundColor: colors.headerBg },
+              ]}
+            >
+              <View
+                style={[
+                  styles.cell,
+                  { width: TOTAL_COL_WIDTH, borderColor: colors.cellBorder },
+                ]}
+              >
+                <Text style={[styles.headerText, { color: colors.headerText }]}>
+                  Total
+                </Text>
+              </View>
             </View>
             {registros.map((reg, idx) => (
               <View
                 key={reg.id}
                 style={[
-                  styles.cell,
-                  styles.totalCell,
-                  idx % 2 === 0 ? styles.evenRow : styles.oddRow,
+                  styles.row,
+                  { height: ROW_HEIGHT },
+                  idx % 2 === 0
+                    ? { backgroundColor: colors.evenRow }
+                    : { backgroundColor: colors.oddRow },
                 ]}
               >
-                <Text>
-                  {reg.resultados.filter(r => r.resultado !== 'fallo').length}
-                </Text>
+                <View
+                  style={[
+                    styles.cell,
+                    {
+                      width: TOTAL_COL_WIDTH,
+                      backgroundColor: colors.totalCell,
+                      borderColor: colors.cellBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.valueTotalText, { color: colors.text }]}>
+                    {reg.resultados.filter(r => r.resultado !== 'fallo').length}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
         </View>
-      </ScrollView>
+      </View>
 
-      {/* Confirm Modal */}
+      {/* Modal de confirmación */}
       <Modal
         transparent
         visible={modalVisible}
@@ -216,8 +364,8 @@ export default function HistorialTiradasScreen() {
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.modalContainer}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalText}>
+          <View style={[styles.modalBox, { backgroundColor: colors.modalBg }]}>
+            <Text style={[styles.modalText, { color: colors.text }]}>
               ¿Seguro que quieres eliminar la partida del{'\n'}
               <Text style={styles.boldText}>
                 {dayjs(toDeleteFecha).format('DD-MM-YY HH:mm')}
@@ -227,13 +375,13 @@ export default function HistorialTiradasScreen() {
             <View style={styles.modalButtons}>
               <Pressable
                 onPress={deleteRegistro}
-                style={[styles.modalBtn, styles.modalBtnYes]}
+                style={[styles.modalBtn, { backgroundColor: colors.trash }]}
               >
                 <Text style={styles.modalBtnText}>Sí</Text>
               </Pressable>
               <Pressable
                 onPress={() => setModalVisible(false)}
-                style={[styles.modalBtn, styles.modalBtnNo]}
+                style={[styles.modalBtn, { backgroundColor: colors.primary }]}
               >
                 <Text style={styles.modalBtnText}>No</Text>
               </Pressable>
@@ -246,81 +394,51 @@ export default function HistorialTiradasScreen() {
 }
 
 const styles = StyleSheet.create({
-  outer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingLeft: 30, // desplaza todo hacia la derecha
-  },
-  container: {
-    paddingVertical: 10,
-  },
-  row: {
+  tableWrapper: {
     flexDirection: 'row',
+    width: '100%',
+    position: 'relative',
   },
-  headerRow: {
-    // si quieres un color distinto para toda la fila, puedes dejarlo aquí
-    // pero cada celda usará `header` para su fondo
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
+  headerRow: { height: ROW_HEIGHT },
+  row: { flexDirection: 'row' },
   cell: {
     width: 60,
-    height: 40,
+    height: ROW_HEIGHT,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ccc', // Será sobrescrito por inline
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // ** ESTO ES LO QUE FALTABA **
-  header: {
-    backgroundColor: '#0277BD',
-  },
-  headerText: {
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  evenRow: {
-    backgroundColor: '#E1F5FE',
-  },
-  oddRow: {
-    backgroundColor: '#FFEBEE',
-  },
-
-  stickyColumn: {
-    backgroundColor: '#fff',
-    zIndex: 1,
-  },
-  nameCell: {
-    width: 120,
-    backgroundColor: '#0277BD', // si quieres mantener el pendiente
-  },
-  dateCell: {
-    width: 140,
-  },
-  totalCell: {
-    width: 60,
-    backgroundColor: '#0277BD', // mismo color que cabecera
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  nameText: {
-    marginLeft: 6,
-    fontWeight: 'bold',
-  },
-  trashBtn: {
+  headerText: { fontWeight: 'bold' },
+  nameCell: { flexDirection: 'row', alignItems: 'center' },
+  nameText: { marginLeft: 6, fontWeight: 'bold' },
+  trashBtn: { position: 'absolute', left: 4, top: 10, zIndex: 3 },
+  valueTotalText: { fontWeight: 'bold', fontSize: 16 },
+  leftSticky: {
     position: 'absolute',
-    left: 4, // separación del borde izquierdo de la celda
-    top: 10, // centrado vertical aproximado dentro de 40px de alto
-    zIndex: 2, // para que quede siempre encima
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: NAME_COL_WIDTH,
+    zIndex: 2,
+  },
+  rightSticky: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: TOTAL_COL_WIDTH,
+    zIndex: 2,
+  },
+  scrollWrapper: {
+    flex: 1,
+    marginLeft: 0 + NAME_COL_WIDTH,
+    marginRight: TOTAL_COL_WIDTH,
+    overflow: 'hidden',
   },
 
-  /* Modal */
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
   modalOverlay: {
     position: 'absolute',
     top: 0,
@@ -329,30 +447,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBox: {
-    width: 280,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    elevation: 5,
-  },
-  modalText: {
-    marginBottom: 20,
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  boldText: {
-    fontWeight: 'bold',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
+  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  modalBox: { width: 280, padding: 20, borderRadius: 8, elevation: 5 },
+  modalText: { marginBottom: 20, textAlign: 'center', fontSize: 16 },
+  boldText: { fontWeight: 'bold' },
+  modalButtons: { flexDirection: 'row', justifyContent: 'space-between' },
   modalBtn: {
     flex: 1,
     paddingVertical: 10,
@@ -360,14 +459,5 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     alignItems: 'center',
   },
-  modalBtnYes: {
-    backgroundColor: '#E57373',
-  },
-  modalBtnNo: {
-    backgroundColor: '#4FC3F7',
-  },
-  modalBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  modalBtnText: { color: '#fff', fontWeight: 'bold' },
 });

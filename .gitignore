@@ -80,4 +80,6 @@ yarn-error.log
 */dist/
 .env
 package-lock.json
-BiteDate/scripts/waitForEmulator.js
+MiTirada/scripts/waitForEmulator.js
+MiTirada/android/gradle.properties
+MiTirada/android/app/my-release-key.keystore

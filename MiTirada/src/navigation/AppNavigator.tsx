@@ -7,16 +7,9 @@ import TiradaScreen from '../views/TiradaScreen';
 import InicioScreen from '../views/InicioScreen';
 import ResumenTiradaScreen from '../views/ResumenTiradaScreen';
 import HistorialTiradasScreen from '../views/HistorialTiradasScreen';
+import { RootStackParamList } from '../types/types';
 
-export type RootStackParamList = {
-  Inicio: undefined;
-  Tirada: undefined;
-  Resumen: {
-    tirador: string;
-    resultados: { numero: number; resultado: 'acierto1' | 'acierto2' | 'fallo' }[];
-  };
-  Historial: undefined;
-};
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -24,10 +17,10 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Inicio">
-        <Stack.Screen name="Inicio" component={InicioScreen} />
-        <Stack.Screen name="Tirada" component={TiradaScreen} />
-        <Stack.Screen name="Resumen" component={ResumenTiradaScreen} />
-        <Stack.Screen name="Historial" component={HistorialTiradasScreen} />
+        <Stack.Screen name="Inicio" component={InicioScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Tirada" component={TiradaScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Resumen" component={ResumenTiradaScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Historial" component={HistorialTiradasScreen} options={{ headerShown: false }}/>
 
       </Stack.Navigator>
     </NavigationContainer>

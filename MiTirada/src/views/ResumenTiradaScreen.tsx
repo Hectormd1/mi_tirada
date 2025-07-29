@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,32 +11,35 @@ import {
   useNavigation,
   useRoute
 } from '@react-navigation/native';
-import { HeaderBackButton } from '@react-navigation/elements';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../types/types';
 import db from '../config/db';
 import { PlatoResumen } from '../types/types';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-
-
+import { useAppColors } from '../DisplayMode/colors';
 
 type ResumenRouteProp = RouteProp<RootStackParamList, 'Resumen'>;
-type ResumenNavProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Resumen'
->;
+type ResumenNavProp = NativeStackNavigationProp<RootStackParamList, 'Resumen'>;
+
+// Parámetros de diseño
+const NAME_COL_WIDTH = 100;
+const TOTAL_COL_WIDTH = 100;
+const ROW_HEIGHT = 40;
+const NUM_ROWS = 2; // cabecera + datos
+const TABLE_HEIGHT = ROW_HEIGHT * NUM_ROWS;
+
+// Ajuste de separación superior
+const EXTRA_TOP = 75;
 
 export default function ResumenTiradaScreen() {
+  const colors = useAppColors();
   const navigation = useNavigation<ResumenNavProp>();
   const route = useRoute<ResumenRouteProp>();
-
-  // Estado local: tirador + resultados
-  const [tirador, setTirador] = useState<string | null>(null);
+  const [tirador, setTirador] = useState<string>('—');
   const [resultados, setResultados] = useState<PlatoResumen[]>([]);
 
-  // Función para cargar última tirada de la BBDD
   const cargarUltimaTirada = () => {
     db.transaction(tx => {
       tx.executeSql(
@@ -49,22 +52,13 @@ export default function ResumenTiradaScreen() {
           if (rows.length > 0) {
             const { nombre, resultados: json } = rows.item(0);
             setTirador(nombre);
-            try {
-              const parsed: PlatoResumen[] = JSON.parse(json);
-              setResultados(parsed);
-            } catch {
-              setResultados([]);
-            }
-          } else {
-            setTirador('—');
-            setResultados([]);
+            try { setResultados(JSON.parse(json)); } catch { setResultados([]); }
           }
         }
       );
     });
   };
 
-  // Si llegan params (desde TiradaScreen), úsalos; si no, carga última
   useEffect(() => {
     if (route.params?.tirador && route.params?.resultados) {
       setTirador(route.params.tirador);
@@ -74,97 +68,185 @@ export default function ResumenTiradaScreen() {
     }
   }, [route.params]);
 
-  // Conteo de aciertos
   const total = resultados.filter(r => r.resultado !== 'fallo').length;
 
-  // Botón físico atrás
-  useFocusEffect(
-    useCallback(() => {
-      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-        navigation.navigate('Inicio');
-        return true;
-      });
-      return () => sub.remove();
-    }, [navigation])
-  );
-
-  // Flecha de header
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: props => (
-        <HeaderBackButton
-          {...props}
-          onPress={() => navigation.navigate('Inicio')}
-        />
-      ),
+  useFocusEffect(useCallback(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.navigate('Inicio');
+      return true;
     });
-  }, [navigation]);
+    return () => sub.remove();
+  }, [navigation]));
 
-  // Renderizado de iconos y estilos
+  // Icono según resultado
   const renderIcon = (r: PlatoResumen) =>
-    r.resultado === 'acierto1'
-          ? <FontAwesome5 name="check" size={20} color="green" />
-          : r.resultado === 'acierto2'
-          ? <FontAwesome6 name="check-double" size={20} color="green" />
-          : <FontAwesome6 name="xmark" size={20} color="red" />;
+    r.resultado === 'acierto1' ? (
+      <FontAwesome5 name="check" size={20} color="green" />
+    ) : r.resultado === 'acierto2' ? (
+      <FontAwesome6 name="check-double" size={20} color="green" />
+    ) : (
+      <FontAwesome6 name="xmark" size={20} color={colors.trash} />
+    );
 
-  const cellStyle = (r: PlatoResumen) =>
-    r.resultado === 'acierto1' || 
-    r.resultado === 'acierto2' ? styles.acierto1
-    : styles.fallo;
+  const cellBg = (r: PlatoResumen) =>
+    r.resultado === 'fallo'
+      ? { backgroundColor: colors.fallo }
+      : { backgroundColor: colors.acierto };
 
   return (
-    <View style={styles.flex}>
-      <ScrollView horizontal contentContainerStyle={styles.container}>
-        <View style={styles.table}>
-          {/* Cabecera */}
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.header, styles.nameCell]}>
-              Tirador
-            </Text>
-            {Array.from({ length: resultados.length }, (_, i) => (
-              <Text key={`h-${i}`} style={[styles.cell, styles.header]}>
-                {resultados[i].numero}
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Separación superior con fondo */}
+      <View style={{ backgroundColor: colors.background, paddingTop: EXTRA_TOP }}>
+        {/* Tabla de resumen */}
+        <View style={styles.tableWrapper}>
+          {/* Columna fija Tirador */}
+          <View style={[styles.leftSticky, { backgroundColor: colors.nameCell }]}>
+            <View style={[
+              styles.row,
+              styles.headerRow,
+              { backgroundColor: colors.headerBg }
+            ]}>
+              <Text style={[
+                styles.cell,
+                styles.header,
+                { width: NAME_COL_WIDTH, borderColor: colors.cellBorder, color: colors.headerText }
+              ]}>
+                Tirador
               </Text>
-            ))}
-            <Text style={[styles.cell, styles.header, styles.totalCell]}>
-              Total
-            </Text>
+            </View>
+            <View style={[styles.row, { height: ROW_HEIGHT }]}>
+              <Text style={[
+                styles.cell,
+                { width: NAME_COL_WIDTH, backgroundColor: colors.nameCell, borderColor: colors.cellBorder, color: colors.text }
+              ]}>
+                <Text style={[styles.boldText, { color: colors.text }]}>{tirador}</Text>
+              </Text>
+            </View>
           </View>
-          {/* Datos */}
-          <View style={styles.row}>
-            <Text style={[styles.cell, styles.nameCell]}>
-              {tirador ?? '—'}
-            </Text>
-            {resultados.map(r => (
-              <Text key={`r-${r.numero}`} style={[styles.cell, cellStyle(r)]}>
-                {renderIcon(r)}
+
+          {/* Scroll central */}
+          <View style={[styles.scrollWrapper]}>
+            <ScrollView
+              horizontal
+              bounces={false}
+              overScrollMode="never"
+              alwaysBounceHorizontal={false}
+              showsHorizontalScrollIndicator={false}
+            >
+              <View>
+                <View style={[styles.row, styles.headerRow]}>
+                  {resultados.map((r, i) => (
+                    <Text
+                      key={i}
+                      style={[
+                        styles.cell,
+                        styles.header,
+                        {
+                          backgroundColor: colors.headerBg,
+                          color: colors.headerText,
+                          borderColor: colors.cellBorder,
+                        }
+                      ]}
+                    >
+                      {r.numero}
+                    </Text>
+                  ))}
+                </View>
+                <View style={[styles.row, { height: ROW_HEIGHT }]}>
+                  {resultados.map((r, i) => (
+                    <Text
+                      key={i}
+                      style={[
+                        styles.cell,
+                        cellBg(r),
+                        { borderColor: colors.cellBorder, color: colors.text }
+                      ]}
+                    >
+                      {renderIcon(r)}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+
+          {/* Columna fija Total */}
+          <View style={[styles.rightSticky, { backgroundColor: colors.totalCell }]}>
+            <View style={[
+              styles.row,
+              styles.headerRow,
+              { backgroundColor: colors.headerBg }
+            ]}>
+              <Text style={[
+                styles.cell,
+                styles.header,
+                { width: TOTAL_COL_WIDTH, borderColor: colors.cellBorder, color: colors.headerText }
+              ]}>
+                Total
               </Text>
-            ))}
-            <Text style={[styles.cell, styles.totalCell]}>{total}</Text>
+            </View>
+            <View style={[styles.row, { height: ROW_HEIGHT }]}>
+              <Text style={[
+                styles.cell,
+                { width: TOTAL_COL_WIDTH, backgroundColor: colors.totalCell, borderColor: colors.cellBorder, color: colors.text }
+              ]}>
+                <Text style={[styles.boldText, { color: colors.text }]}>{total}</Text>
+              </Text>
+            </View>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: { paddingHorizontal: 10, alignItems: 'center' },
-  table: { marginVertical: 20 },
-  row: { flexDirection: 'row' },
+  tableWrapper: {
+    flexDirection: 'row',
+    height: TABLE_HEIGHT,
+    width: '100%',
+    position: 'relative',
+  },
+  headerRow: {
+    height: ROW_HEIGHT,
+  },
+  row: {
+    flexDirection: 'row',
+  },
   cell: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ccc', // Será sobrescrito por el inline style
+    textAlign: 'center',
     padding: 8,
     minWidth: 50,
-    textAlign: 'center',
+    height: ROW_HEIGHT,
+    textAlignVertical: 'center',
   },
-  header: { fontWeight: 'bold', backgroundColor: '#eee' },
-  nameCell: { minWidth: 100, backgroundColor: '#fafafa' },
-  totalCell: { minWidth: 100, backgroundColor: '#fafafa' },
-  acierto1: { backgroundColor: '#c8e6c9' },
-  acierto2: { backgroundColor: '#90caf9' },
-  fallo: { backgroundColor: '#ffcdd2' },
+  header: {
+    fontWeight: 'bold',
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  scrollWrapper: {
+    flex: 1,
+    marginLeft: NAME_COL_WIDTH,
+    marginRight: TOTAL_COL_WIDTH,
+    overflow: 'hidden',
+  },
+  leftSticky: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: NAME_COL_WIDTH,
+    zIndex: 2,
+  },
+  rightSticky: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: TOTAL_COL_WIDTH,
+    zIndex: 2,
+  },
 });

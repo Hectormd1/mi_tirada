@@ -1,0 +1,30 @@
+const DarkMode = {
+  background: '#15191C',
+  inputBg: '#23272C',
+  inputText: '#fff',
+  text: '#fff',
+  textSoft: '#bbb',
+  headerBg: '#123868',
+  headerText: '#fff',
+  cell: '#23272C',
+  cellBorder: '#333',
+  pending: '#243848',
+  acierto: '#20543d',
+  acierto2: '#406380',
+  fallo: '#69242a',
+  nameCell: '#263f58',
+  totalCell: '#263f58',
+  oddRow: '#244358',
+  evenRow: '#232d39',
+  trash: '#ff5454',
+  primaryBtn: '#2196F3',
+  secondaryBtn: '#ebb71cff',
+  missBtn: '#B71C1C',
+  hitBtn: '#0d7510ff',
+  hit2Btn: '#388E3C',
+  modalBg: '#23272C',
+  modalOverlay: 'rgba(0,0,0,0.6)',
+  pendingCell: "#263A4D",     // <--- Añadir
+  primary: "#007AFF",         // <--- Añadir
+};
+export default DarkMode;

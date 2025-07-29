@@ -16,3 +16,13 @@ export type PlatoHistorial = {
   resultados: PlatoResumen[];
   fecha: string;
 };
+
+export type RootStackParamList = {
+  Inicio: undefined;
+  Tirada: undefined;
+  Resumen: {
+    tirador: string;
+    resultados: { numero: number; resultado: 'acierto1' | 'acierto2' | 'fallo' }[];
+  };
+  Historial: undefined;
+};

@@ -89,3 +89,22 @@ adb shell run-as com.mitirada cp /data/local/tmp/tiradas.db databases/tiradas.db
 
 # 3) (Opcional) borra el temporal
 adb shell rm /data/local/tmp/tiradas.db
+
+
+Disparo 1:
+
+Detecta un sonido fuerte (pum).
+
+Espera 3 segundos:
+
+Si NO hay otro disparo en 3s ⇒ Se apunta acierto al primer disparo (acierto1), vibración larga doble + log.
+
+Si hay otro disparo en 3s ⇒ se espera el segundo disparo.
+
+Disparo 2:
+
+Si en los 4 segundos siguientes:
+
+El usuario da 2 golpecitos al móvil ⇒ Fallo (fallo), vibración corta 4x + log.
+
+NO hay 2 golpecitos ⇒ Acierto en segundo disparo (acierto2), vibración larga 4x + log.
